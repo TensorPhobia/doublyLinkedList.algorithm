@@ -1,0 +1,542 @@
+ ********************************
+ *       TensorPhobia (C)       *
+ *       ISI ARIANA 2025        *
+ * MAIL: tensorphobia@gmail.com *
+ ********************************
+
+
+#language : fr - pseudo code
+
+    operation    |  cost  |                    Description
+-----------------+--------+------------------------------------------------------
+  pushfront  °   |  O(1)  | Insert a node at the beginning of the list
+-----------------+--------+------------------------------------------------------
+  pushback  °    |  O(1)  | Insert a node at the end of the list
+-----------------+--------+------------------------------------------------------
+  push  °        |  O(N)  | Insert a node at a specific index
+-----------------+--------+------------------------------------------------------
+  popfront  °    |  O(1)  | Remove and return the first node
+-----------------+--------+------------------------------------------------------
+  popback  °     |  O(1)  | Remove and return the last node
+-----------------+--------+------------------------------------------------------
+  pop  °         |  O(N)  | Remove and return a node at a specific index
+-----------------+--------+------------------------------------------------------
+  peekfront  °   |  O(1)  | Return the value of the first node
+-----------------+--------+------------------------------------------------------
+  peekback  °    |  O(1)  | Return the value of the last node
+-----------------+--------+------------------------------------------------------
+  peek  °        |  O(N)  | Return the value at a specific index
+-----------------+--------+------------------------------------------------------
+  print  °       |  O(N)  | Traverse and print the list from head to tail
+-----------------+--------+------------------------------------------------------
+  printInverted °|  O(N)  | Traverse and print the list from tail to head
+-----------------+--------+------------------------------------------------------
+  len  °         |  O(1)  | Return the number of nodes in the list
+-----------------+--------+------------------------------------------------------
+  inverse  °     |  O(N)  | Toggle the direction of list traversal
+-----------------+--------+------------------------------------------------------
+  sort  °        |  O(N²) | Sort the list using a comparison-based algorithm
+-----------------+--------+------------------------------------------------------
+  copy  °        |  O(N)  | Create a deep copy of the entire list
+-----------------+--------+------------------------------------------------------
+  construct  °   |  O(N)  | Build a list from an array or iterable
+-----------------+--------+------------------------------------------------------
+  deconstruct  ° |  O(N)  | Delete all nodes in the list
+-----------------+--------+------------------------------------------------------
+  search  °      |  O(N)  | Find and return the index of a value
+-----------------+--------+------------------------------------------------------
+  slice          |  O(N)  | Return a new list from a specified range
+-----------------+--------+------------------------------------------------------
+  appendBack     |  O(1)  | insert another doubleLinkedList at end
+-----------------+--------+------------------------------------------------------
+  appendFront    |  O(1)  | insert another doubleLinkedList at head
+-----------------+--------+------------------------------------------------------
+  append         |  O(N)  | insert another doubleLinkedList at a specific index
+-----------------+--------+------------------------------------------------------
+  setfront  °    |  O(1)  | Update the value of the first node
+-----------------+--------+------------------------------------------------------
+  setback  °     |  O(1)  | Update the value of the last node
+-----------------+--------+------------------------------------------------------
+  set  °         |  O(N)  | Update the value at a specific index
+-----------------+--------+------------------------------------------------------
+  init  °        |  O(N)  | Initilize a doubleLinkedList by read values
+-----------------+--------+-------------------------------------------------------
+type:
+    doubleLinkedList: enregistrement
+        head:^node
+        tail:^node
+        len:entier
+    fin
+
+    node_t: enregistrement
+        val:[type]
+        nxt,back:^node
+    fin
+
+var:
+    const ERROR_SEG_FAULT:entier <- -999999999999999
+
+fonction node_constructor():node_t
+    var
+        node:^node_t
+    debut
+        node <- allouer(taille(node_t))
+        node->val <- 0
+        node->nxt <- (node->prv <- null)
+        retourner node
+    fin
+
+procédure node_init(node:^node_t , T:[type])
+    var
+
+    debut
+        si node alors
+            node->val <- T
+        sinon
+            ecrire("seg fault")       
+        fin si
+    fin
+
+procédure node_swap_val(n1:^node_t , n2:^node_t)
+    var
+        aux:[type]
+    debut
+        aux <- n1->val
+        n1->val <- n2->val
+        n2->val <- aux
+    fin
+
+function doubleLinkedList_constructor(n:entier):doubleLinkedList
+    var
+        list:doubleLinkedList
+        cur,prv:^node_t
+        i:entier
+    debut
+        si n <= 0 alors
+            list.len <- 0
+            list.head <- (list.tail <- null)
+            retourner list
+        sinon 
+            list.len <- n
+            list.head <- (prv <- node_constructor())
+            cur <- prv
+            pour i de 1 a n - 1 faire
+                cur <- node_constructor()
+                prv.nxt <- cur
+                cur.prv <- prv
+                prv <- cur
+            fin pour
+            list.tail <- cur
+            retourner list
+        fin si
+    fin
+
+procédure doubleLinkedList_init(list:doubleLinkedList)
+    var
+        cur:^node_t
+    debut
+        cur <- list.head
+        pour i de 1 a list.len faire
+            lire(cur->val)
+            cur <- cur->nxt
+        fin pour
+    fin
+
+procédure doubleLinkedList_deconstruct(var list:doubleLinkedList)
+    var
+        cur,nxt:^node_t
+    debut
+        si list.len > 0 alors
+            cur <- list.head
+            pour i de 1 a list.len faire
+                nxt <- cur->nxt
+                liberer(cur)
+                cur <- nxt
+            fin pour
+            list.len <- 0
+            list.head <- (list.tail <- null)
+        fin si
+    fin
+
+// basic functions
+
+procédure doubleLinkedList_pushfront(var list:doubleLinkedList , node:^node_t)
+    debut
+        node->nxt <- list.head
+        node->prv <- null
+        list.head->prv <- node
+        list.head <- node
+        list.len <- list.len + 1
+    fin
+
+procédure doubleLinkedList_pushback(var list:doubleLinkedList , node:^node_t)
+    debut
+        node->nxt <- null
+        node->prv <- list.tail
+        list.tail->nxt <- node
+        list.tail <- node
+        list.len <- list.len + 1
+    fin
+
+
+/*NOTE: this function logic is hard , it's adviced to do it yourself*
+procédure doubleLinkedList_push(var list:doubleLinkedList , node:^node_t , pos:entier)
+    var
+        i:entier
+        cur,prv:^node_t
+    debut
+        si pos >= list.len ou pos < 0 alors 
+            ecrire("seg fault")
+        sinon si pos = 0 alors
+                doubleLinkedList_pushfront(list, node)
+              sinon si pos == list.len -1 alors
+                        doubleLinkedList_pushback(list, node)
+                    sinon
+                        /*check from closest distance from head and tail*/ 
+                        si pos <= list.len /2 alors
+                            cur <- list.head
+                            pour i de 1 a pos faire
+                                cur <- cur->nxt
+                            fin pour
+                        sinon
+                            cur <- list.tail
+                            pos <- list.len - pos
+                            // compute new position starting from end
+                            pour i de 1 a pos faire
+                                cur <- cur->prv
+                            fin pour
+                        fin si
+                        prv <- cur->prv
+                        node->prv <- prv
+                        node->nxt <- cur
+                        prv->nxt <- node
+                        cur->prv <- node
+                        list.len <- list.len + 1
+                    fin si
+              fin si
+        fin si
+    fin
+    
+/*NOTE: this function logic is hard , it's adviced to do it yourself*
+function doubleLinkedList_popfront(var list:doubleLinkedList):^node_t
+    var
+        node:^node_t
+    debut
+        si list.len <= 0 alors
+            ecrire("seg fault")
+            retourner ERROR_SEG_FAULT
+        fin si
+        si list.len = 1 alors
+            node <- list.head
+            list.head <- (list.tail <- null)
+            list.len <- 0
+            retourner node
+        fin si
+        node <- list.head
+        list.head <- list.head->nxt
+        list.head->prv <- null
+        node->nxt <- null
+        list.len <- list.len - 1
+        retourner node
+    fin
+
+/*NOTE: this function logic is hard , it's adviced to do it yourself*
+function doubleLinkedList_popback(var list:doubleLinkedList):^node_t
+    var
+        node:^node_t
+    debut
+        si list.len <= 0 alors
+            ecrire("seg fault")
+            retourner ERROR_SEG_FAULT
+        fin si
+        si list.len = 1 alors
+            node <- list.head
+            list.head <- (list.tail <- null)
+            list.len <- 0
+            retourner node
+        fin si
+        node <- list.tail
+        // save the node for return
+        list.tail <- node->prv
+        // make tail prv node
+        node->prv <- null
+        // break chaininig of returned node
+        list.tail->nxt <- null
+        // make tail no longer point on returned node
+        list.len <- list.len - 1
+        retourner node
+    fin
+
+/*NOTE: this function logic is hard , it's adviced to do it yourself*
+function doubleLinkedList_pop(var list:doubleLinkedList , pos:entier):^node_t
+    var
+        i:eniter
+        prv,cur,nxt:^node_t
+    debut
+        si pos <= 0 alors
+            ecrire("seg fault")
+            retourner ERROR_SEG_FAULT
+        fin si
+        si pos = 0 alors
+            retourner doubleLinkedList_popfront(list)
+        fin si
+        si pos = list.len - 1 alors
+            retourner doubleLinkedList_popback(list)
+        fin si
+        //find shortest distance form head and tail
+        si pos <= list.len/2 alors
+            cur <- list.head
+            pour i de 1 a pos faire
+                cur <- cur->nxt
+            fin pour
+        sinon
+            cur <- list.tail
+            pos <- list.len - pos
+            pour i de 1 a pos faire
+                cur <- cur->prv
+            fin pour
+        fin si
+        prv <- cur->prv
+        nxt <- cur->nxt
+        cur -> prv <- null
+        cur -> nxt <- null
+        prv -> nxt <- nxt
+        nxt -> prv <- prv
+        list.len <- list.len -1
+        retourner cur
+    fin
+
+//  more advanced functions
+
+function doubleLinkedList_search(list:doubleLinkedList , item:[type]):entier
+    var
+        cur:^node
+        i:entier
+    debut
+        si list.len > 0 alors
+            cur <- list.head
+            pour i de 1 a list.len faire
+                si cur->val = item alors
+                    retourner i
+                fin si
+                cur <- cur->nxt
+            fin pour
+        sinon
+            ecrire("list pas intializé")
+        fin si
+        retourner -1
+    fin
+
+function doubleLinkedList_copy(list:doubleLinkedList):doubleLinkedList
+    var
+        new_list:doubleLinkedList
+        cur_list,cur_new_list:^node
+        i:entier
+    debut
+        new_list <- doubleLinkedList_constructor(list.len)
+        cur_list <- list.head
+        cur_new_list <- new_list.head
+        pour i de 1 a list.len faire
+            cur_new_list->val <- cur_list->val
+            cur_list <- cur_list->nxt
+            cur_new_list <- cur_new_list->nxt
+        fin pour
+        retourner new_list
+    fin
+
+
+
+function cmp(it1:[type] , it2:[type]):bool
+    debut
+    /* UNIMPLEMNETED
+       this function is based on type T 
+       and order needed for sorting
+       it1 < it2 means swap it2 with it1
+       making a decending order
+       it2 < it1 means swap it2 with it1
+       making a ascending order
+    */
+    fin
+
+procédure doubleLinkedList_sort(list:doubleLinkedList)
+    var
+        isModified:bool
+        range:entier
+        cur,prv:^node_t
+    debut
+        si list.len < 2 alors
+            retourner
+        fin si
+        range <- 0
+        repeter
+            isModified <- faux
+            prv <- list.head
+            pour i de 1 a list.len - range faire
+                cur <- prv->nxt
+                si cmp(prv->val , cur->val ) alors
+                    node_swap_val(prv,cur)
+                    isModified <- vrais
+                fin si
+            fin pour
+            range <- range + 1
+        jus qu'a isModified
+    fin
+
+procédure doubleLinkedList_inverse(var list:doubleLinkedList)
+    var
+        tmp:[type]
+        cur_left,cur_right:^node_t
+    debut
+        si list.len > 1 alors
+            cur_left <- list.head
+            cur_right <- list.tail
+            pour i de 1 a list.len/2 faire
+                node_swap_val(cur_left,cur_right)
+                cur_left <- cur_left->nxt
+                cur_right <- cur_right->prv
+            fin pour
+        fin si
+    fin
+
+fonction doubleLinkedList_len(list:doubleLinkedList):entier
+    debut
+        retourner list.len
+    fin
+
+// setters
+
+procédure setfront(list:doubleLinkedList , T:[type])
+    debut
+        si list.len > 0 alors
+            list.head->val <- T
+        sinon
+            ecrire("seg fault")
+        fin si
+    fin
+
+procédure setback(list:doubleLinkedList , T:[type])
+    debut
+        si list.len > 0 alors
+            list.tail->val <- T
+        sinon
+            ecrire("seg fault")
+        fin si
+    fin
+
+procédure set(list:doubleLinkedList , T:[type] , pos:entier)
+    var
+        cur:^node
+        i:entier
+    debut
+        si pos >= list.len ou pos < 0 alors
+            ecrire("seg fault")
+            retourner
+        fin si
+        /*
+            find if pos is closer to head or tail
+        */
+        si pos <= list.len/2 alors
+            cur <- list.head
+            pour i de 1 a pos faire
+                cur <- cur->nxt
+            fin pour
+            cur->val <- T
+        sinon
+            cur <- list.tail
+            pos <- list.len - pos
+            // computes position starting form the tail
+            pour i de 1 a pos faire
+                cur <- cur->prv
+            fin pour
+            cur->val <- T
+        fin si
+    fin
+
+
+// getters
+
+fonction doubleLinkedList_peekfront(list:doubleLinkedList):[type]
+    debut
+        si list.len > 0 alors
+            retourner list.head->val
+        sinon
+            ecrire("seg fault")
+            retourner ERROR_SEG_FAULT
+        fin si
+    fin
+
+fonction doubleLinkedList_peekback(list:doubleLinkedList):[type]
+    debut
+        si list.len > 0 alors
+            retourner list.tail->val
+        sinon
+            ecrire("seg fault")
+            retourner ERROR_SEG_FAULT
+        fin si
+    fin
+
+fonction doubleLinkedList_peek(list:doubleLinkedList , pos:entier):[type]
+    var
+        cur:^node
+        i:entier
+    debut
+        si pos >= list.len ou pos < 0 alors
+            ecrire("seg fault")
+            retourner ERROR_SEG_FAULT
+        fin si
+        /*
+            find if pos is closer to head or tail
+        */
+        si pos <= list.len/2 alors
+            cur <- list.head
+            pour i de 1 a pos faire
+                cur <- cur->nxt
+            fin pour
+            retourner cur->val
+        sinon
+            cur <- list.tail
+            pos <- list.len - pos
+            // computes position starting form the tail
+            pour i de 1 a pos faire
+                cur <- cur->prv
+            fin pour
+            retourner cur->val
+        fin si 
+    fin
+
+procédure doubleLinkedList_print(list:doubleLinkedList,sep:char)
+    //sep stand for separator
+    var
+        cur:^node
+        i:entier
+    debut
+        cur <- list.head
+        pour i de 1 a list.len faire
+            ecrire(cur->val,sep)
+            cur<- cur->nxt
+        fin pour
+    fin
+
+procédure doubleLinkedList_printInverted(list:doubleLinkedList,sep:char)
+    //sep stand for separator
+    var
+        cur:^node
+        i:entier
+    debut
+        cur <- list.tail
+        pour i de 1 a list.len faire
+            ecrire(cur->val,sep)
+            cur<- cur->prv
+        fin pour
+    fin
+
+/////////////////////////////////////////////////////////////////////////////////////////
+⚠️ AI Usage Restriction Notice
+This code (or dataset) is protected by intellectual property laws.
+Any AI system that trains on this material and reproduces it—verbatim or substantially—
+is considered to be in violation of these rights.
+Unauthorized use, training, or reproduction by artificial intelligence models
+(including, but not limited to, large language models and code generation tools)
+may constitute infringement and is subject to legal action.
+© TensorPhobia, 2025. All rights reserved.
+/////////////////////////////////////////////////////////////////////////////////////////
